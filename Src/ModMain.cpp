@@ -14,6 +14,7 @@
 #include <Prey/GameDll/ark/player/trauma/ArkTraumaPsychoshock.h>
 #include <Prey/GameDll/ark/player/trauma/ArkTraumaRadiation.h>
 #include <Prey/GameDll/ark/player/trauma/ArkTraumaSuitIntegrity.h>
+#include <Prey/GameDll/ark/player/ArkPlayer.h>
 #include <Chairloader/IChairXmlUtils.h>
 #include "ModMain.h"
 
@@ -28,6 +29,7 @@ struct TraumaClass
 };
 
 static auto s_ArkPlayerComponent_LoadConfig_Hook = ArkPlayerComponent::FLoadConfig.MakeHook();
+static auto s_ArkPlayerStatusComponent_StatusCmd_Hook = ArkPlayerStatusComponent::FStatusCmd.MakeHook();
 
 //! Really hacky code to call a constructor from Prey without rewriting it.
 template <typename T, typename TFunc, typename... TArgs>
@@ -45,6 +47,85 @@ static void ArkPlayerComponent_LoadConfig_Hook(ArkPlayerComponent* const _this, 
 {
     gMod->InstantiateTraumas(_this->m_pStatusComponent.get());
     s_ArkPlayerComponent_LoadConfig_Hook.InvokeOrig(_this, _node);
+}
+
+static void ArkPlayerStatusComponent_StatusCmd_Hook(IConsoleCmdArgs* pArgs)
+{
+    ArkPlayer* pPlayer = ArkPlayer::GetInstancePtr();
+    if (!pPlayer)
+        return;
+
+    IConsole* pCon = gEnv->pConsole;
+    ArkPlayerStatusComponent& statusComp = pPlayer->m_playerComponent.GetStatusComponent();
+    int nArgs = pArgs->GetArgCount();
+
+    if (nArgs > 1)
+    {
+        const char* arg1 = pArgs->GetArg(1);
+
+        if (!stricmp(arg1, "clear"))
+        {
+            if (nArgs > 2)
+            {
+                const char* arg2 = pArgs->GetArg(2);
+                auto it = std::find_if(statusComp.m_statuses.begin(), statusComp.m_statuses.end(), [&](const std::unique_ptr<ArkTraumaBase>& x) { return x->m_desc.m_Name == arg2; });
+
+                if (it != statusComp.m_statuses.end())
+                    statusComp.ForceStatus((*it)->m_status, false);
+                else
+                    pCon->PrintLine("Status not found.");
+            }
+            else
+            {
+                statusComp.ClearAllStatuses();
+            }
+        }
+        else
+        {
+            auto it = std::find_if(statusComp.m_statuses.begin(), statusComp.m_statuses.end(), [&](const std::unique_ptr<ArkTraumaBase>& x) { return x->m_desc.m_Name == arg1; });
+
+            if (it != statusComp.m_statuses.end())
+                statusComp.ForceStatus((*it)->m_status, true);
+            else
+                pCon->PrintLine("Status not found.");
+        }
+    }
+    else
+    {
+        pCon->PrintLine(fmt::format("Active statuses: {}", statusComp.m_activeStatuses.size()).c_str());
+
+        for (auto& status : statusComp.m_statuses)
+        {
+            auto it = std::find(statusComp.m_activeStatuses.begin(), statusComp.m_activeStatuses.end(), status->m_status);
+            bool active = it != statusComp.m_activeStatuses.end();
+            pCon->PrintLine(fmt::format("- {}: {}", status->m_desc.m_Name.c_str(), active).c_str());
+        }
+
+#if 0
+        if (statusComp.m_activeStatuses.empty())
+        {
+            pCon->PrintLine("No statuses on the player.");
+        }
+        else
+        {
+            pCon->PrintLine("Current statuses on the player:");
+
+            for (EArkPlayerStatus status : statusComp.m_activeStatuses)
+            {
+                auto it = std::find_if(statusComp.m_statuses.begin(), statusComp.m_statuses.end(), [&](const std::unique_ptr<ArkTraumaBase>& x) { return x->m_status == status; });
+
+                if (it != statusComp.m_statuses.end())
+                {
+                    pCon->PrintLine((*it)->m_desc.m_Name.c_str());
+                }
+                else
+                {
+                    pCon->PrintLine(fmt::format("unknown {}", (int)status).c_str());
+                }
+            }
+        }
+#endif
+    }
 }
 
 //! Factory function to create a trauma instance dynamically.
@@ -142,6 +223,7 @@ void ModMain::FillModInfo(ModDllInfoEx& info)
 void ModMain::InitHooks()
 {
     s_ArkPlayerComponent_LoadConfig_Hook.SetHookFunc(ArkPlayerComponent_LoadConfig_Hook);
+    s_ArkPlayerStatusComponent_StatusCmd_Hook.SetHookFunc(ArkPlayerStatusComponent_StatusCmd_Hook);
 }
 
 void ModMain::InitSystem(const ModInitInfo& initInfo, ModDllInfo& dllInfo)
