@@ -2,7 +2,7 @@
 <Mod
     modName="tmp64.CustomTraumas"
     displayName="Custom Traumas"
-    version="0.1.0"
+    version="1.0.0"
     author="tmp64"
     dllName="CustomTraumas.dll"
     hasXML="true"
