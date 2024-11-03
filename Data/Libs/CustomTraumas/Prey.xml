@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<TraumaList>
+    <Trauma ID="12348086275151114879" Name="Bleeding" Class="ArkTraumaBleeding" />
+    <Trauma ID="12348086275151114854" Name="Blind" Class="ArkTraumaBase" />
+    <Trauma ID="12348086275151114873" Name="Concussion" Class="ArkTraumaConcussion" />
+    <Trauma ID="10739735956128964089" Name="Disruption" Class="ArkTraumaDisruption" />
+    <Trauma ID="12348086275158537928" Name="Drunk" Class="ArkTraumaDrunk" />
+    <Trauma ID="10739735956141682310" Name="Exhausted" Class="ArkTraumaBase" />
+    <Trauma ID="12348086275196485446" Name="DrunkGood" Class="ArkStatusGoodDrunk" />
+    <Trauma ID="12348086275151114848" Name="Fear" Class="ArkTraumaFear" />
+    <Trauma ID="12348086275151114868" Name="Hobbled" Class="ArkTraumaHobbled" />
+    <Trauma ID="7293080054624820147" Name="PsychoShock" Class="ArkTraumaPsychoshock" />
+    <Trauma ID="12348086275151114858" Name="RadSickness" Class="ArkTraumaRadiation" />
+    <Trauma ID="12348086275158555302" Name="Stun" Class="ArkTraumaBase" />
+    <Trauma ID="12348086275155884667" Name="SuitDamaged" Class="ArkTraumaSuitIntegrity" />
+    <Trauma ID="12348086275151114863" Name="ThirdDegreeBurns" Class="ArkTraumaBurns" />
+    <Trauma ID="10641886185827992356" Name="WellFed" Class="ArkStatusWellFed" />
+</TraumaList>
